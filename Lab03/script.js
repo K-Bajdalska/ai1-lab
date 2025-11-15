@@ -14,6 +14,8 @@ document.getElementById("getLocation").addEventListener("click", function() {
             const lon = position.coords.longitude;
             map.setView([lat, lon], 17);
             userLocationEl.innerHTML = `<p class="usrLoc">${lat.toFixed(4)}, ${lon.toFixed(4)}</p>`;
+            let marker = L.marker([lat, lon]).addTo(map);
+            marker.bindPopup(`<strong>Hello!</strong><br>Your coordinates: ${lat}, ${lon}`);
         },
         error => {
             console.error(error);
