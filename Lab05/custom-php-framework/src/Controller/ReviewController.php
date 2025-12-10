@@ -1,0 +1,91 @@
+<?php
+namespace App\Controller;
+
+use App\Exception\NotFoundException;
+use App\Model\Review;
+use App\Service\Router;
+use App\Service\Templating;
+
+class ReviewController{
+    public function indexAction(Templating $templating, Router $router): ?string
+    {
+        $review = Review::findAll();
+        $html = $templating->render('review/index.html.php', [
+            'reviews' => $review,
+            'router' => $router,
+        ]);
+        return $html;
+    }
+
+    public function createAction(?array $requestReview, Templating $templating, Router $router): ?string
+    {
+        if ($requestReview) {
+            $review = Review::fromArray($requestReview);
+            // @todo missing validation
+            $review->save();
+
+            $path = $router->generatePath('review-index');
+            $router->redirect($path);
+            return null;
+        } else {
+            $review = new Review();
+        }
+
+        $html = $templating->render('review/create.html.php', [
+            'review' => $review,
+            'router' => $router,
+        ]);
+        return $html;
+    }
+
+    public function editAction(int $reviewId, ?array $requestReview, Templating $templating, Router $router): ?string
+    {
+        $review = Review::find($reviewId);
+        if (! $review) {
+            throw new NotFoundException("Missing review with id $reviewId");
+        }
+
+        if ($requestReview) {
+            $review->fill($requestReview);
+            // @todo missing validation
+            $review->save();
+
+            $path = $router->generatePath('review-index');
+            $router->redirect($path);
+            return null;
+        }
+
+        $html = $templating->render('review/edit.html.php', [
+            'review' => $review,
+            'router' => $router,
+        ]);
+        return $html;
+    }
+
+    public function showAction(int $reviewId, Templating $templating, Router $router): ?string
+    {
+        $review = Review::find($reviewId);
+        if (! $review) {
+            throw new NotFoundException("Missing review with id $reviewId");
+        }
+
+        $html = $templating->render('review/show.html.php', [
+            'review' => $review,
+            'router' => $router,
+        ]);
+        return $html;
+    }
+
+    public function deleteAction(int $reviewId, Router $router): ?string
+    {
+        $review = Review::find($reviewId);
+        if (! $review) {
+            throw new NotFoundException("Missing review with id $reviewId");
+        }
+
+        $review->delete();
+        $path = $router->generatePath('review-index');
+        $router->redirect($path);
+        return null;
+    }
+}
